@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union
+from typing import Any, Dict, Optional, Union, List
 from fastapi import (
     FastAPI,
     HTTPException,
@@ -9,9 +9,10 @@ from fastapi import (
     Header,
     Depends,
 )
-from fastapi.responses import JSONResponse
+
+# from fastapi.responses import JSONResponse
 from time import sleep
-from models import Curso
+from models import Curso, cursos
 
 
 def fake_db():
@@ -23,39 +24,29 @@ def fake_db():
         sleep(2)
 
 
-app = FastAPI()
+app = FastAPI(
+    title="API de Cursos",
+    version="0.2.1",
+    description="API para aprender a utilização do FastAPI",
+)
 
 
-cursos = {
-    1: {
-        "Titulo": "Programação para Leigos",
-        "aulas": 112,
-        "horas": 58,
-    },
-    2: {
-        "Titulo": "Algorimo e Lógica de Programação",
-        "aulas": 100,
-        "horas": 60,
-    },
-    3: {
-        "Titulo": "FastAPI - APIs Modernas e Assíncronas com Python",
-        "aulas": 150,
-        "horas": 80,
-    },
-    4: {
-        "Titulo": "Banco de dados para Leigos",
-        "aulas": 120,
-        "horas": 90,
-    },
-}
-
-
-@app.get("/cursos")
+@app.get(
+    "/cursos",
+    description="Retorna todos os cursos armazenados no banco de dados",
+    summary="Retorna todos os cursos",
+    response_model=List[Curso],
+    response_description="Cursos Encontrados",
+)
 async def get_cursos(db: Any = Depends(fake_db)):
     return cursos
 
 
-@app.get("/cursos/{curso_id}")
+@app.get(
+    "/cursos/{curso_id}",
+    description="Retorna o curso armazenados no banco de dados com o ID passado",
+    summary="Retorna o curso com o ID passado",
+)
 async def get_curso(
     curso_id: int = Path(
         default=None,
@@ -63,7 +54,8 @@ async def get_curso(
         description="Deve ser entre 1 e 4",
         gt=0,
         lt=5,
-    ),db: Any = Depends(fake_db)
+    ),
+    db: Any = Depends(fake_db),
 ):
     try:
         curso = cursos[curso_id]
@@ -75,15 +67,25 @@ async def get_curso(
         )
 
 
-@app.post("/cursos", status_code=status.HTTP_201_CREATED)
-async def post_curso(curso: Curso,db: Any = Depends(fake_db)):
+@app.post(
+    "/cursos",
+    status_code=status.HTTP_201_CREATED,
+    description="Cadastra um novo curso no banco de dados",
+    summary="Cadastrar um novo curso",
+    response_model=Curso,
+)
+async def post_curso(curso: Curso, db: Any = Depends(fake_db)):
     next_id: int = len(cursos) + 1
     cursos[next_id] = curso
     del curso.id
     return curso
 
 
-@app.put("/cursos/{curso_id}")
+@app.put(
+    "/cursos/{curso_id}",
+    description="Atualiza um curso armazenado no banco de dados com o ID passado",
+    summary="Atualiza um curso com o ID passado",
+)
 async def put_curso(curso_id: int, curso: Curso, db: Any = Depends(fake_db)):
     if curso_id in cursos:
         cursos[curso_id] = curso
@@ -96,8 +98,12 @@ async def put_curso(curso_id: int, curso: Curso, db: Any = Depends(fake_db)):
         )
 
 
-@app.delete("/cursos/{curso_id}")
-async def delete_curso(curso_id: int,db: Any = Depends(fake_db)):
+@app.delete(
+    "/cursos/{curso_id}",
+    description="Deleta o curso armazenado no banco de dados pelo ID",
+    summary="Deleta um curso pelo ID",
+)
+async def delete_curso(curso_id: int, db: Any = Depends(fake_db)):
     if curso_id in cursos:
         del cursos[curso_id]
         # return cursos
@@ -110,7 +116,11 @@ async def delete_curso(curso_id: int,db: Any = Depends(fake_db)):
         )
 
 
-@app.get("/calculadora")
+@app.get(
+    "/calculadora",
+    description="Utilização de Query parameters e Header",
+    summary="Query parameters e Header",
+)
 async def calcular(
     a: int = Query(default=None, gt=5),
     b: int = Query(default=None, gt=10),
