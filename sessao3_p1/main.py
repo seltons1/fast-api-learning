@@ -18,10 +18,10 @@ from models import Curso, cursos
 def fake_db():
     try:
         print("abrindo conexão db ")
-        sleep(5)
+        sleep(1)
     finally:
         print("fechando conexão")
-        sleep(2)
+        sleep(1)
 
 
 app = FastAPI(
@@ -76,8 +76,8 @@ async def get_curso(
 )
 async def post_curso(curso: Curso, db: Any = Depends(fake_db)):
     next_id: int = len(cursos) + 1
-    cursos[next_id] = curso
-    del curso.id
+    curso.id = next_id
+    cursos.append(curso)
     return curso
 
 
