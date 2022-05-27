@@ -20,6 +20,8 @@ pydantic==1.9.1
 pyflakes==2.4.0
 sniffio==1.2.0
 SQLAlchemy==1.4.36
+sqlalchemy2-stubs==0.0.2a22
+sqlmodel==0.0.6
 starlette==0.19.1
 tomli==2.0.1
 typing-extensions==4.2.0
