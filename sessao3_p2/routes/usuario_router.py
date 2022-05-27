@@ -4,6 +4,6 @@ from fastapi import APIRouter
 router = APIRouter()
 
 
-@router.get('/api/v1/usuarios')
+@router.get("/api/v1/usuarios")
 async def get_usuarios():
-    return {'info': 'Todos os Usuarios'}
+    return {"info": "Todos os Usuarios"}

@@ -8,13 +8,13 @@ class Curso(BaseModel):
     aulas: int
     horas: int
 
-    @validator('titulo')
+    @validator("titulo")
     def validar_titulo(cls, value):
-        palavras = value.split(' ')
+        palavras = value.split(" ")
         if len(palavras) < 3:
-            raise ValueError('O titulo deve ter pelo menos 3 palavras.')
+            raise ValueError("O titulo deve ter pelo menos 3 palavras.")
         if value.islower():
-            raise ValueError('o titulo deve ser captalizado')
+            raise ValueError("o titulo deve ser captalizado")
         return value
 
 
