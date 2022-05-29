@@ -20,10 +20,10 @@ async def post_artigo(
     db: AsyncSession = Depends(get_session),
 ):
     novo_artigo: ArtigoModel = ArtigoModel(
-        titulo_artigo=artigo.titulo,
+        titulo=artigo.titulo,
         descricao=artigo.descricao,
         url_fonte=artigo.url_fonte,
-        usuario_logado=artigo.usuario_id,
+        usuario_id=usuario_logado.id,
     )
     db.add(novo_artigo)
     await db.commit()
@@ -97,7 +97,6 @@ async def put_artigo(
 
 @router.delete(
     "/{artigo_id}",
-    response_model=ArtigoSchema,
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_artigo(

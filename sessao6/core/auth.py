@@ -11,7 +11,7 @@ from core.security import verifica_senha
 from pydantic import EmailStr
 
 oauth2_schema = OAuth2PasswordBearer(
-    tokenUrl=f"{settings.API_V1_STR/usuarios/login}"
+    tokenUrl=f"{settings.API_V1_STR}/usuarios/login"
 )
 
 
@@ -41,6 +41,9 @@ def _criar_token(tipo_token: str, tempo_vida: timedelta, sub: str) -> str:
     payload["iat"] = datetime.now(tz=sp)
     payload["sub"] = str(sub)
 
+    print(
+        jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.ALGORITHM)
+    )
     return jwt.encode(
         payload, settings.JWT_SECRET, algorithm=settings.ALGORITHM
     )
