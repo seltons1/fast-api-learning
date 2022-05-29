@@ -9,7 +9,7 @@ class UsuarioSchemaBase(BaseModel):
     sobrenome: str
     email: EmailStr
     eh_admin: bool = False
-    
+
     class Config:
         orm_mode = True
 
