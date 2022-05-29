@@ -2,6 +2,7 @@ from typing import List, Optional, Any
 from fastapi import APIRouter, status, Depends, HTTPException, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import JSONResponse
+import sqlalchemy
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from models.usuario_model import UsuarioModel
@@ -14,6 +15,8 @@ from schemas.usuario_schema import (
 from core.deps import get_current_user, get_session
 from core.security import gerar_hash_senha
 from core.auth import autenticar, criar_token_acesso
+from sqlalchemy.exc import IntegrityError
+
 
 router = APIRouter()
 
@@ -39,9 +42,15 @@ async def post_usuario(
         eh_admin=usuario.eh_admin,
     )
     async with db as session:
-        session.add(novo_usuario)
-        await session.commit()
-        return novo_usuario
+        try:
+            session.add(novo_usuario)
+            await session.commit()
+            return novo_usuario
+        except IntegrityError:
+            raise HTTPException(
+                status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                detail="Email já cadastrado",
+            )
 
 
 @router.get("/", response_model=List[UsuarioSchemaBase])
@@ -63,7 +72,7 @@ async def get_usuario(
     usuario_id: int, db: AsyncSession = Depends(get_session)
 ):
     async with db as session:
-        query = select(UsuarioModel).filter_by(UsuarioModel.id == usuario_id)
+        query = select(UsuarioModel).filter(UsuarioModel.id == usuario_id)
         result = await session.execute(query)
         usuario: UsuarioSchemaArtigos = result.scalars().unique().one_or_none()
         if usuario:
@@ -86,7 +95,7 @@ async def put_usuario(
     db: AsyncSession = Depends(get_session),
 ):
     async with db as session:
-        query = select(UsuarioModel).filter_by(UsuarioModel.id == usuario_id)
+        query = select(UsuarioModel).filter(UsuarioModel.id == usuario_id)
         result = await session.execute(query)
         usuario_up: UsuarioSchema = result.scalars().unique().one_or_none()
         if usuario:
@@ -116,7 +125,7 @@ async def delete_usuario(
     usuario_id: int, db: AsyncSession = Depends(get_session)
 ):
     async with db as session:
-        query = select(UsuarioModel).filter_by(UsuarioModel.id == usuario_id)
+        query = select(UsuarioModel).filter(UsuarioModel.id == usuario_id)
         result = await session.execute(query)
         usuario_del: UsuarioSchemaArtigos = (
             result.scalars().unique().one_or_none()
@@ -141,7 +150,6 @@ async def login(
     usuario = await autenticar(
         email=form_data.username, senha=form_data.password, db=db
     )
-
     if not usuario:
         raise HTTPException(
             detail="Dados de acesso incorreto",
